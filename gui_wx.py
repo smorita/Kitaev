@@ -1,8 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8
 
+"""GUI application for exact eigen-energy of the Kitaev model."""
+
+__author__ = "Satoshi Morita"
+__version__ = "2.0.0"
+
 import wx
-from kitaev import energy
+import kitaev
 
 class Kitaev(wx.Frame):
     def __init__(self, *arg, **kwargs):
@@ -16,9 +21,9 @@ class Kitaev(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnQuit, item)
         menu_bar.Append(sub_menu, '&File')
         self.SetMenuBar(menu_bar)
-        
+
         self.status_bar = self.CreateStatusBar()
-        
+
         panel = wx.Panel(self)
 
         panel1 = wx.Panel(panel)
@@ -73,7 +78,7 @@ class Kitaev(wx.Frame):
         vbox_top = wx.BoxSizer(wx.VERTICAL)
         vbox_top.Add(vbox, 1, wx.ALL | wx.EXPAND, 20)
         panel.SetSizer(vbox_top)
-        
+
         self.SetSize((440, 560))
         self.SetTitle('Kitaev model')
         self.Show(True)
@@ -89,7 +94,7 @@ class Kitaev(wx.Frame):
         elif name=="L2": param[1] = int(val)
         elif name=="M": param[2] = int(val)
         self.UpdateLabel()
-        
+
     def OnText(self, e):
         obj = e.GetEventObject()
         try:
@@ -115,7 +120,7 @@ class Kitaev(wx.Frame):
         param[2] = param[2]%param[0]
         self.status_bar.SetStatusText("Calculating... [l1,L2,M,Jz]={0}".format(param))
         try:
-            ene = getEnergyList(param)
+            ene = GetEnergyList(param)
         except:
             self.status_bar.SetStatusText("Unexpected error")
             return
@@ -131,15 +136,18 @@ class Kitaev(wx.Frame):
         self.status_bar.SetStatusText("Done!")
 
 
-def getEnergyList(param):
-    l1, l2, m, jz = param
-    return [ energy(l1, l2, m, jz, loop)[0] for loop in range(4) ]
-   
+def GetEnergyList(param):
+    from kitaev import min_energy, Bond
+    kitaev.L1 = param[0]
+    kitaev.L2 = param[1]
+    kitaev.M = param[2]
+    kitaev.Jz = param[3]
+    return [ min_energy(Bond(loop))[0] for loop in range(4) ]
 
 def main():
     app = wx.App()
     Kitaev(None)
-    app.MainLoop()    
+    app.MainLoop()
 
 param = [6, 2, 2, 1.0]
 
